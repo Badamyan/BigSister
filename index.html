@@ -1,0 +1,1438 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Sisterhood ID Card</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+
+  <style>
+    /* ═══════════════════════════════════════════
+       RESET & ROOT TOKENS
+    ═══════════════════════════════════════════ */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --void:       #07070F;
+      --navy:       #0D0D1E;
+      --card-dark:  #111122;
+      --card-mid:   #1A1A35;
+      --gold:       #C9A84C;
+      --gold-light: #E8C86A;
+      --gold-dim:   #8B6F32;
+      --platinum:   #D8D8E8;
+      --white:      #F0F0FF;
+      --pending:    #FF7A35;
+      --approved:   #00D4A0;
+      --silver:     #9898B8;
+      --font-display: 'Playfair Display', Georgia, serif;
+      --font-ui:      'Space Grotesk', system-ui, sans-serif;
+    }
+
+    html, body {
+      width: 100%; height: 100%;
+      overflow: hidden;
+      background: var(--void);
+      font-family: var(--font-ui);
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+
+    /* ═══════════════════════════════════════════
+       SCENE — full-viewport dark luxury background
+    ═══════════════════════════════════════════ */
+    .scene {
+      position: fixed; inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+    }
+
+    /* Animated gradient base */
+    .scene::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: radial-gradient(ellipse 80% 60% at 50% 40%, #1A0A3A 0%, #0D0820 40%, #07070F 100%);
+      animation: breathe 8s ease-in-out infinite;
+    }
+    @keyframes breathe {
+      0%,100% { opacity: 1; }
+      50%      { opacity: 0.7; }
+    }
+
+    /* Glow orbs */
+    .orb {
+      position: absolute;
+      border-radius: 50%;
+      filter: blur(60px);
+      pointer-events: none;
+      animation: drift linear infinite;
+    }
+    .orb-1 {
+      width: 260px; height: 260px;
+      background: radial-gradient(circle, rgba(100,40,200,0.25) 0%, transparent 70%);
+      top: -80px; left: -60px;
+      animation-duration: 20s;
+    }
+    .orb-2 {
+      width: 200px; height: 200px;
+      background: radial-gradient(circle, rgba(201,168,76,0.15) 0%, transparent 70%);
+      bottom: -60px; right: -40px;
+      animation-duration: 25s; animation-delay: -8s;
+    }
+    .orb-3 {
+      width: 150px; height: 150px;
+      background: radial-gradient(circle, rgba(0,180,160,0.12) 0%, transparent 70%);
+      top: 40%; left: -50px;
+      animation-duration: 18s; animation-delay: -4s;
+    }
+    @keyframes drift {
+      0%   { transform: translate(0,0) scale(1); }
+      33%  { transform: translate(30px,-20px) scale(1.1); }
+      66%  { transform: translate(-20px,30px) scale(0.9); }
+      100% { transform: translate(0,0) scale(1); }
+    }
+
+    /* Floating particles */
+    .particles { position: absolute; inset: 0; pointer-events: none; }
+    .particle {
+      position: absolute;
+      width: 2px; height: 2px;
+      border-radius: 50%;
+      background: var(--gold);
+      opacity: 0;
+      animation: float-particle linear infinite;
+    }
+    @keyframes float-particle {
+      0%   { transform: translateY(100vh) scale(0); opacity: 0; }
+      10%  { opacity: 0.6; }
+      90%  { opacity: 0.3; }
+      100% { transform: translateY(-20px) scale(1); opacity: 0; }
+    }
+
+    /* Moving light beam */
+    .light-beam {
+      position: absolute;
+      top: -200px; left: -200px;
+      width: 100px; height: 600px;
+      background: linear-gradient(90deg, transparent, rgba(201,168,76,0.04), transparent);
+      transform: rotate(25deg);
+      animation: sweep 12s ease-in-out infinite;
+      pointer-events: none;
+    }
+    @keyframes sweep {
+      0%   { transform: rotate(25deg) translateX(-300px); opacity: 0; }
+      20%  { opacity: 1; }
+      80%  { opacity: 1; }
+      100% { transform: rotate(25deg) translateX(800px); opacity: 0; }
+    }
+
+    /* ═══════════════════════════════════════════
+       CARD WRAPPER — perspective container
+    ═══════════════════════════════════════════ */
+    .card-wrapper {
+      position: relative;
+      perspective: 1200px;
+      width: 340px;
+      height: 210px;
+      transform-style: preserve-3d;
+      cursor: pointer;
+      transition: transform 0.1s linear;
+      z-index: 10;
+    }
+
+    /* ═══════════════════════════════════════════
+       CARD FLIPPER — the rotating element
+    ═══════════════════════════════════════════ */
+    .card-flipper {
+      position: relative;
+      width: 100%; height: 100%;
+      transform-style: preserve-3d;
+      transition: transform 1.05s cubic-bezier(0.645, 0.045, 0.355, 1.000);
+    }
+    .card-flipper.flipped {
+      transform: rotateY(180deg);
+    }
+
+    /* ═══════════════════════════════════════════
+       SHARED CARD FACE STYLES
+    ═══════════════════════════════════════════ */
+    .card-face {
+      position: absolute; inset: 0;
+      border-radius: 18px;
+      backface-visibility: hidden;
+      -webkit-backface-visibility: hidden;
+      overflow: hidden;
+      box-shadow:
+        0 0 0 1px rgba(201,168,76,0.25),
+        0 4px 20px rgba(0,0,0,0.6),
+        0 20px 60px rgba(0,0,0,0.5),
+        0 0 60px rgba(100,40,200,0.08),
+        inset 0 1px 0 rgba(255,255,255,0.08);
+    }
+
+    /* Card background gradient — deep premium dark */
+    .card-face::before {
+      content: '';
+      position: absolute; inset: 0;
+      background:
+        radial-gradient(ellipse 120% 80% at 20% 20%, rgba(40,30,80,0.8) 0%, transparent 60%),
+        radial-gradient(ellipse 80% 60% at 80% 80%, rgba(20,15,50,0.6) 0%, transparent 50%),
+        linear-gradient(135deg, #1C1C35 0%, #0F0F22 40%, #141428 100%);
+      z-index: 0;
+    }
+
+    /* Gold edge border */
+    .card-face::after {
+      content: '';
+      position: absolute; inset: 0;
+      border-radius: 18px;
+      background: linear-gradient(135deg,
+        rgba(201,168,76,0.35) 0%,
+        rgba(201,168,76,0.05) 30%,
+        transparent 50%,
+        rgba(201,168,76,0.05) 70%,
+        rgba(201,168,76,0.2) 100%
+      );
+      pointer-events: none;
+      z-index: 20;
+    }
+
+    /* Holographic shimmer overlay */
+    .shimmer {
+      position: absolute; inset: 0;
+      border-radius: 18px;
+      background: linear-gradient(105deg,
+        transparent 30%,
+        rgba(255,255,255,0.06) 45%,
+        rgba(201,168,76,0.12) 50%,
+        rgba(255,255,255,0.06) 55%,
+        transparent 70%
+      );
+      background-size: 300% 300%;
+      animation: shimmer-anim 4s ease-in-out infinite;
+      pointer-events: none;
+      z-index: 18;
+    }
+    @keyframes shimmer-anim {
+      0%,100% { background-position: 200% 50%; opacity: 0.5; }
+      50%      { background-position: -200% 50%; opacity: 1; }
+    }
+
+    /* ═══════════════════════════════════════════
+       FRONT FACE
+    ═══════════════════════════════════════════ */
+    .card-front {
+      z-index: 2;
+    }
+
+    .front-content {
+      position: relative; z-index: 10;
+      height: 100%;
+      padding: 18px 22px 16px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    /* Top row: logo + NFC */
+    .front-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .card-brand {
+      display: flex;
+      flex-direction: column;
+      gap: 1px;
+    }
+    .brand-name {
+      font-family: var(--font-display);
+      font-size: 9px;
+      font-weight: 600;
+      letter-spacing: 0.35em;
+      color: var(--gold-light);
+      text-transform: uppercase;
+      opacity: 0.9;
+    }
+    .brand-sub {
+      font-size: 7px;
+      font-weight: 500;
+      letter-spacing: 0.25em;
+      color: var(--silver);
+      text-transform: uppercase;
+      opacity: 0.6;
+    }
+
+    .nfc-icon {
+      width: 22px; height: 22px;
+      opacity: 0.5;
+      fill: none;
+      stroke: var(--gold);
+      stroke-width: 1.5;
+    }
+
+    /* Chip + security row */
+    .front-chip-row {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .chip {
+      width: 38px; height: 30px;
+      border-radius: 5px;
+      background: linear-gradient(135deg, #C8A855 0%, #E8D070 30%, #A07830 60%, #C8A855 100%);
+      box-shadow:
+        inset 0 1px 0 rgba(255,255,255,0.3),
+        inset 0 -1px 0 rgba(0,0,0,0.3),
+        0 2px 6px rgba(0,0,0,0.4);
+      position: relative;
+      overflow: hidden;
+      flex-shrink: 0;
+    }
+    .chip::before {
+      content: '';
+      position: absolute; inset: 3px;
+      border-radius: 2px;
+      border: 1px solid rgba(160,120,48,0.8);
+      background: linear-gradient(135deg, rgba(200,168,85,0.4), rgba(240,210,100,0.1));
+    }
+    /* chip lines */
+    .chip::after {
+      content: '';
+      position: absolute;
+      top: 50%; left: 50%;
+      transform: translate(-50%,-50%);
+      width: 20px; height: 16px;
+      background:
+        linear-gradient(90deg, transparent 30%, rgba(160,120,48,0.6) 30%, rgba(160,120,48,0.6) 32%, transparent 32%),
+        linear-gradient(90deg, transparent 60%, rgba(160,120,48,0.6) 60%, rgba(160,120,48,0.6) 62%, transparent 62%),
+        linear-gradient(0deg, transparent 33%, rgba(160,120,48,0.5) 33%, rgba(160,120,48,0.5) 35%, transparent 35%),
+        linear-gradient(0deg, transparent 64%, rgba(160,120,48,0.5) 64%, rgba(160,120,48,0.5) 66%, transparent 66%);
+    }
+
+    .security-symbols {
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+    }
+    .security-line {
+      height: 1px;
+      background: linear-gradient(90deg, var(--gold-dim), transparent);
+      opacity: 0.4;
+    }
+    .security-line:nth-child(1) { width: 28px; }
+    .security-line:nth-child(2) { width: 20px; }
+    .security-line:nth-child(3) { width: 24px; }
+
+    /* Cardholder name */
+    .front-name-area { display: flex; flex-direction: column; gap: 4px; }
+
+    .name-label {
+      font-size: 7px;
+      font-weight: 500;
+      letter-spacing: 0.2em;
+      color: var(--silver);
+      opacity: 0.5;
+      text-transform: uppercase;
+    }
+    .cardholder-name {
+      font-family: var(--font-display);
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--white);
+      letter-spacing: 0.05em;
+      line-height: 1.1;
+    }
+    .cardholder-role {
+      font-size: 8px;
+      font-weight: 500;
+      letter-spacing: 0.25em;
+      color: var(--gold);
+      text-transform: uppercase;
+      opacity: 0.8;
+      margin-top: 2px;
+    }
+
+    /* Bottom row: status + decorations */
+    .front-bottom {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .status-badge {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 5px 10px;
+      border-radius: 20px;
+      background: rgba(255,122,53,0.12);
+      border: 1px solid rgba(255,122,53,0.35);
+      position: relative;
+      overflow: visible;
+    }
+    .status-dot {
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      background: var(--pending);
+      box-shadow: 0 0 8px var(--pending);
+      animation: pulse-dot 2s ease-in-out infinite;
+      flex-shrink: 0;
+    }
+    @keyframes pulse-dot {
+      0%,100% { transform: scale(1); box-shadow: 0 0 8px var(--pending); }
+      50%      { transform: scale(1.3); box-shadow: 0 0 16px var(--pending), 0 0 24px rgba(255,122,53,0.3); }
+    }
+    .status-text {
+      font-size: 8px;
+      font-weight: 700;
+      letter-spacing: 0.2em;
+      color: var(--pending);
+      text-transform: uppercase;
+    }
+
+    .card-decoration {
+      display: flex;
+      gap: 4px;
+      opacity: 0.6;
+    }
+    .deco-circle {
+      width: 28px; height: 28px;
+      border-radius: 50%;
+    }
+    .deco-circle-1 {
+      background: radial-gradient(circle at 35% 35%, #E8C86A, #A07830);
+      box-shadow: 0 0 8px rgba(201,168,76,0.3);
+    }
+    .deco-circle-2 {
+      background: radial-gradient(circle at 35% 35%, #4A4A7A, #1A1A3A);
+      margin-left: -14px;
+      border: 1px solid rgba(201,168,76,0.2);
+    }
+
+    /* Luxury diagonal lines (card watermark) */
+    .card-watermark {
+      position: absolute;
+      top: 0; right: 0;
+      width: 160px; height: 100%;
+      opacity: 0.04;
+      background: repeating-linear-gradient(
+        -45deg,
+        transparent,
+        transparent 4px,
+        var(--gold) 4px,
+        var(--gold) 5px
+      );
+      pointer-events: none;
+      z-index: 5;
+      border-radius: 0 18px 18px 0;
+    }
+
+    /* ═══════════════════════════════════════════
+       BACK FACE
+    ═══════════════════════════════════════════ */
+    .card-back {
+      transform: rotateY(180deg);
+      z-index: 1;
+    }
+
+    .back-content {
+      position: relative; z-index: 10;
+      height: 100%;
+      padding: 14px 18px 14px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    /* Back top: approved badge + card ID */
+    .back-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .approved-badge {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      padding: 4px 10px;
+      border-radius: 20px;
+      background: rgba(0,212,160,0.1);
+      border: 1px solid rgba(0,212,160,0.4);
+    }
+    .approved-check {
+      width: 14px; height: 14px;
+      border-radius: 50%;
+      background: var(--approved);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 8px;
+      font-weight: 700;
+      color: #000;
+      box-shadow: 0 0 10px rgba(0,212,160,0.5);
+      animation: approved-glow 2s ease-in-out infinite;
+    }
+    @keyframes approved-glow {
+      0%,100% { box-shadow: 0 0 8px rgba(0,212,160,0.4); }
+      50%      { box-shadow: 0 0 18px rgba(0,212,160,0.7), 0 0 30px rgba(0,212,160,0.2); }
+    }
+    .approved-text {
+      font-size: 8px;
+      font-weight: 700;
+      letter-spacing: 0.2em;
+      color: var(--approved);
+      text-transform: uppercase;
+    }
+
+    .card-id-block { text-align: right; }
+    .card-id-label { font-size: 6px; color: var(--silver); opacity: 0.4; letter-spacing: 0.15em; text-transform: uppercase; }
+    .card-id-number { font-size: 9px; color: var(--platinum); font-weight: 500; letter-spacing: 0.1em; margin-top: 1px; }
+
+    /* Checklist */
+    .checklist {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 4px 12px;
+    }
+    .check-item {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      opacity: 0;
+      transform: translateX(-6px);
+      transition: all 0.4s ease;
+    }
+    .check-item.visible {
+      opacity: 1;
+      transform: translateX(0);
+    }
+    .check-mark {
+      width: 13px; height: 13px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--approved), #00A87A);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 7px;
+      color: #000;
+      font-weight: 700;
+      flex-shrink: 0;
+      box-shadow: 0 0 6px rgba(0,212,160,0.35);
+    }
+    .check-text {
+      font-size: 8px;
+      font-weight: 500;
+      color: var(--platinum);
+      letter-spacing: 0.05em;
+      white-space: nowrap;
+    }
+
+    /* Signature + date row */
+    .back-sig-row {
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      gap: 10px;
+    }
+    .sig-block { flex: 1; }
+    .sig-label { font-size: 6px; color: var(--silver); opacity: 0.4; letter-spacing: 0.15em; text-transform: uppercase; margin-bottom: 3px; }
+    .sig-line-container { position: relative; }
+    .sig-line { height: 1px; background: linear-gradient(90deg, var(--gold-dim), transparent); opacity: 0.5; }
+    .sig-text {
+      font-family: var(--font-display);
+      font-size: 11px;
+      font-style: italic;
+      color: var(--gold);
+      opacity: 0.7;
+      margin-top: 1px;
+      letter-spacing: 0.02em;
+    }
+
+    .date-block { text-align: right; }
+    .date-label { font-size: 6px; color: var(--silver); opacity: 0.4; letter-spacing: 0.15em; text-transform: uppercase; margin-bottom: 3px; }
+    .date-value { font-size: 9px; color: var(--platinum); font-weight: 500; letter-spacing: 0.1em; }
+
+    /* Barcode */
+    .barcode-area {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .barcode {
+      flex: 1;
+      height: 28px;
+      position: relative;
+      overflow: hidden;
+    }
+    .barcode-lines {
+      display: flex;
+      height: 100%;
+      gap: 1px;
+    }
+    .b-line {
+      background: var(--platinum);
+      opacity: 0.7;
+      flex-shrink: 0;
+    }
+    .barcode-num {
+      font-size: 6px;
+      color: var(--silver);
+      letter-spacing: 0.08em;
+      text-align: center;
+      margin-top: 2px;
+      opacity: 0.5;
+    }
+
+    /* QR placeholder */
+    .qr-placeholder {
+      width: 38px; height: 38px;
+      border: 1px solid rgba(201,168,76,0.3);
+      border-radius: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      flex-shrink: 0;
+      overflow: hidden;
+    }
+    .qr-grid {
+      display: grid;
+      grid-template-columns: repeat(5,1fr);
+      gap: 1px;
+      width: 30px; height: 30px;
+    }
+    .qr-cell {
+      border-radius: 0.5px;
+      background: var(--gold);
+      opacity: 0;
+    }
+
+    /* Gold stamp */
+    .stamp {
+      position: absolute;
+      bottom: 10px; right: 12px;
+      width: 44px; height: 44px;
+      border: 2px solid rgba(201,168,76,0.5);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transform: rotate(-18deg);
+      opacity: 0;
+      transition: opacity 0.5s ease 0.8s;
+    }
+    .stamp.visible { opacity: 1; }
+    .stamp::before {
+      content: '';
+      position: absolute; inset: 3px;
+      border-radius: 50%;
+      border: 1px solid rgba(201,168,76,0.3);
+    }
+    .stamp-text {
+      font-size: 5.5px;
+      font-weight: 700;
+      letter-spacing: 0.15em;
+      color: var(--gold);
+      text-align: center;
+      text-transform: uppercase;
+      line-height: 1.3;
+    }
+
+    /* ═══════════════════════════════════════════
+       ACTIVATE BUTTON
+    ═══════════════════════════════════════════ */
+    .btn-wrap {
+      margin-top: 28px;
+      position: relative;
+      z-index: 10;
+    }
+
+    .activate-btn {
+      position: relative;
+      width: 100%;
+      max-width: 340px;
+      padding: 17px 0;
+      border: none;
+      border-radius: 16px;
+      cursor: pointer;
+      overflow: hidden;
+      font-family: var(--font-ui);
+      font-size: 14px;
+      font-weight: 600;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: #000;
+      background: linear-gradient(135deg, #E8C86A 0%, #C9A84C 35%, #F0D880 65%, #A07830 100%);
+      box-shadow:
+        0 4px 20px rgba(201,168,76,0.4),
+        0 1px 0 rgba(255,255,255,0.2) inset,
+        0 -1px 0 rgba(0,0,0,0.3) inset;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .activate-btn::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: linear-gradient(180deg, rgba(255,255,255,0.15) 0%, transparent 50%);
+      pointer-events: none;
+    }
+    .activate-btn:active {
+      transform: scale(0.97);
+      box-shadow: 0 2px 10px rgba(201,168,76,0.3);
+    }
+    .activate-btn.hidden {
+      opacity: 0;
+      pointer-events: none;
+      transform: translateY(10px);
+      transition: opacity 0.3s ease, transform 0.3s ease;
+    }
+
+    /* Ripple */
+    .ripple {
+      position: absolute;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.35);
+      transform: scale(0);
+      animation: ripple-out 0.6s linear forwards;
+      pointer-events: none;
+    }
+    @keyframes ripple-out {
+      to { transform: scale(4); opacity: 0; }
+    }
+
+    /* ═══════════════════════════════════════════
+       HEADER LABEL ABOVE CARD
+    ═══════════════════════════════════════════ */
+    .header-label {
+      position: relative;
+      z-index: 10;
+      text-align: center;
+      margin-bottom: 24px;
+    }
+    .header-eyebrow {
+      font-size: 10px;
+      font-weight: 500;
+      letter-spacing: 0.35em;
+      color: var(--gold);
+      text-transform: uppercase;
+      opacity: 0.7;
+      margin-bottom: 6px;
+    }
+    .header-title {
+      font-family: var(--font-display);
+      font-size: 22px;
+      font-weight: 700;
+      color: var(--white);
+      letter-spacing: 0.03em;
+    }
+    .header-sub {
+      font-size: 11px;
+      font-weight: 400;
+      color: var(--silver);
+      opacity: 0.55;
+      margin-top: 5px;
+      letter-spacing: 0.08em;
+    }
+
+    /* ═══════════════════════════════════════════
+       CONFETTI
+    ═══════════════════════════════════════════ */
+    .confetti-container {
+      position: fixed; inset: 0;
+      pointer-events: none;
+      z-index: 999;
+      overflow: hidden;
+    }
+    .confetti-piece {
+      position: absolute;
+      width: 8px; height: 8px;
+      border-radius: 1px;
+      opacity: 0;
+      animation: confetti-fall 2.5s ease-in forwards;
+    }
+    @keyframes confetti-fall {
+      0%   { transform: translateY(-20px) rotateZ(0deg); opacity: 1; }
+      100% { transform: translateY(110vh) rotateZ(720deg); opacity: 0; }
+    }
+
+    /* ═══════════════════════════════════════════
+       SPARKLES
+    ═══════════════════════════════════════════ */
+    .sparkle {
+      position: absolute;
+      pointer-events: none;
+      z-index: 30;
+      animation: sparkle-anim 1.2s ease-out forwards;
+    }
+    .sparkle::before, .sparkle::after {
+      content: '✦';
+      position: absolute;
+      font-size: 10px;
+      color: var(--gold-light);
+      opacity: 0;
+      animation: twinkle 1.2s ease-out forwards;
+    }
+    .sparkle::after {
+      animation-delay: 0.2s;
+      font-size: 7px;
+      top: -10px; left: 10px;
+    }
+    @keyframes twinkle {
+      0%   { opacity: 0; transform: scale(0) rotate(0deg); }
+      40%  { opacity: 1; transform: scale(1.2) rotate(30deg); }
+      100% { opacity: 0; transform: scale(0.5) rotate(60deg); }
+    }
+
+    /* ═══════════════════════════════════════════
+       CONFIRMATION PANEL — replaces button area
+    ═══════════════════════════════════════════ */
+
+    /* Wrapper sits in same .btn-wrap space */
+    .confirmation-panel {
+      width: 100%;
+      max-width: 340px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0;
+
+      /* Hidden by default — revealed after flip */
+      opacity: 0;
+      transform: translateY(22px) scale(0.96);
+      pointer-events: none;
+
+      /* Spring entrance */
+      transition:
+        opacity 0.65s cubic-bezier(0.34, 1.56, 0.64, 1),
+        transform 0.65s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+    .confirmation-panel.reveal {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+      pointer-events: auto;
+    }
+
+    /* Thin gold divider line above the message */
+    .confirm-divider {
+      width: 60px;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, var(--gold), transparent);
+      margin-bottom: 18px;
+      opacity: 0;
+      transform: scaleX(0);
+      transition: opacity 0.4s ease 0.15s, transform 0.5s cubic-bezier(0.34,1.56,0.64,1) 0.15s;
+    }
+    .confirmation-panel.reveal .confirm-divider {
+      opacity: 0.6;
+      transform: scaleX(1);
+    }
+
+    /* Green check icon */
+    .confirm-check-icon {
+      width: 36px; height: 36px;
+      border-radius: 50%;
+      background: radial-gradient(circle at 40% 35%, #00E8B0, #00A878);
+      display: flex; align-items: center; justify-content: center;
+      margin-bottom: 14px;
+      box-shadow:
+        0 0 0 0 rgba(0,212,160,0.5),
+        0 4px 20px rgba(0,212,160,0.35);
+      animation: none;
+      opacity: 0;
+      transform: scale(0.4) rotate(-20deg);
+      transition:
+        opacity 0.5s cubic-bezier(0.34,1.56,0.64,1) 0.1s,
+        transform 0.5s cubic-bezier(0.34,1.56,0.64,1) 0.1s;
+    }
+    .confirmation-panel.reveal .confirm-check-icon {
+      opacity: 1;
+      transform: scale(1) rotate(0deg);
+      animation: check-breathe 3s ease-in-out 0.6s infinite;
+    }
+    @keyframes check-breathe {
+      0%,100% { box-shadow: 0 0 0 0 rgba(0,212,160,0.5), 0 4px 20px rgba(0,212,160,0.35); }
+      50%      { box-shadow: 0 0 0 8px rgba(0,212,160,0), 0 4px 30px rgba(0,212,160,0.55); }
+    }
+    .confirm-check-svg {
+      width: 18px; height: 18px;
+      stroke: #000;
+      stroke-width: 2.5;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      fill: none;
+      /* SVG checkmark draw-on animation */
+      stroke-dasharray: 22;
+      stroke-dashoffset: 22;
+      transition: stroke-dashoffset 0.5s ease 0.55s;
+    }
+    .confirmation-panel.reveal .confirm-check-svg {
+      stroke-dashoffset: 0;
+    }
+
+    /* Main message text */
+    .confirm-message {
+      font-family: var(--font-display);
+      font-size: 19px;
+      font-weight: 700;
+      color: var(--white);
+      text-align: center;
+      line-height: 1.35;
+      letter-spacing: 0.02em;
+      /* Golden glow on the text */
+      text-shadow:
+        0 0 20px rgba(201,168,76,0.4),
+        0 0 40px rgba(201,168,76,0.15),
+        0 2px 8px rgba(0,0,0,0.5);
+    }
+
+    /* The heart emoji — pulsing */
+    .confirm-heart {
+      display: inline-block;
+      /* Subtle continuous heartbeat */
+      animation: heartbeat 3.5s ease-in-out 1.6s infinite;
+    }
+    @keyframes heartbeat {
+      0%,100%  { transform: scale(1); }
+      10%      { transform: scale(1.25); }
+      20%      { transform: scale(1); }
+      30%      { transform: scale(1.15); }
+      40%      { transform: scale(1); }
+    }
+
+    /* Sub-line below message */
+    .confirm-sub {
+      margin-top: 10px;
+      font-size: 10px;
+      font-weight: 500;
+      letter-spacing: 0.28em;
+      color: var(--gold);
+      text-transform: uppercase;
+      opacity: 0;
+      transition: opacity 0.5s ease 0.5s;
+    }
+    .confirmation-panel.reveal .confirm-sub {
+      opacity: 0.7;
+    }
+
+    /* Decorative star row */
+    .confirm-stars {
+      margin-top: 12px;
+      font-size: 10px;
+      letter-spacing: 0.5em;
+      color: var(--gold-light);
+      opacity: 0;
+      transition: opacity 0.5s ease 0.7s;
+    }
+    .confirmation-panel.reveal .confirm-stars {
+      opacity: 0.45;
+    }
+
+    /* ═══════════════════════════════════════════
+       CONTAINER CENTERING
+    ═══════════════════════════════════════════ */
+    .app-container {
+      position: relative;
+      z-index: 2;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 0 20px;
+      width: 100%;
+    }
+  </style>
+</head>
+<body>
+
+<!-- ═══ SCENE BACKGROUND ═══ -->
+<div class="scene">
+  <!-- Glow orbs -->
+  <div class="orb orb-1"></div>
+  <div class="orb orb-2"></div>
+  <div class="orb orb-3"></div>
+
+  <!-- Floating light beam -->
+  <div class="light-beam"></div>
+
+  <!-- Floating particles (JS-generated) -->
+  <div class="particles" id="particles"></div>
+
+  <!-- ═══ MAIN APP ═══ -->
+  <div class="app-container">
+
+    <!-- Header -->
+    <div class="header-label">
+      <div class="header-eyebrow">Exclusive Invitation</div>
+      <div class="header-title">You've Been Selected</div>
+      <div class="header-sub">Sisterhood · Private Members</div>
+    </div>
+
+    <!-- Card wrapper (perspective parent) -->
+    <div class="card-wrapper" id="cardWrapper">
+      <div class="card-flipper" id="cardFlipper">
+
+        <!-- ══════════ FRONT FACE ══════════ -->
+        <div class="card-face card-front">
+          <div class="card-watermark"></div>
+          <div class="shimmer"></div>
+
+          <div class="front-content">
+            <!-- Top row -->
+            <div class="front-top">
+              <div class="card-brand">
+                <div class="brand-name">Sisterhood</div>
+                <div class="brand-sub">Private Members</div>
+              </div>
+              <!-- NFC icon -->
+              <svg class="nfc-icon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path d="M20 12C20 16.4183 16.4183 20 12 20" stroke-linecap="round"/>
+                <path d="M17 12C17 14.7614 14.7614 17 12 17" stroke-linecap="round"/>
+                <path d="M14 12C14 13.1046 13.1046 14 12 14" stroke-linecap="round"/>
+              </svg>
+            </div>
+
+            <!-- Chip row -->
+            <div class="front-chip-row">
+              <div class="chip"></div>
+              <div class="security-symbols">
+                <div class="security-line"></div>
+                <div class="security-line"></div>
+                <div class="security-line"></div>
+              </div>
+            </div>
+
+            <!-- Name -->
+            <div class="front-name-area">
+              <div class="name-label">Cardholder</div>
+              <div class="cardholder-name">Nane Arushanyan</div>
+              <div class="cardholder-role">Candidate · Sisterhood</div>
+            </div>
+
+            <!-- Bottom -->
+            <div class="front-bottom">
+              <div class="status-badge">
+                <div class="status-dot"></div>
+                <div class="status-text">Pending</div>
+              </div>
+              <div class="card-decoration">
+                <div class="deco-circle deco-circle-1"></div>
+                <div class="deco-circle deco-circle-2"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <!-- ／ FRONT FACE -->
+
+        <!-- ══════════ BACK FACE ══════════ -->
+        <div class="card-face card-back">
+          <div class="shimmer"></div>
+
+          <div class="back-content">
+            <!-- Top -->
+            <div class="back-top">
+              <div class="approved-badge">
+                <div class="approved-check" id="approvedCheck">✓</div>
+                <div class="approved-text">Approved</div>
+              </div>
+              <div class="card-id-block">
+                <div class="card-id-label">Card ID</div>
+                <div class="card-id-number" id="cardIdNumber">#SIS-2026-0001</div>
+              </div>
+            </div>
+
+            <!-- Checklist -->
+            <div class="checklist" id="checklist">
+              <div class="check-item" data-delay="0">
+                <div class="check-mark">✓</div>
+                <div class="check-text">Kind Heart</div>
+              </div>
+              <div class="check-item" data-delay="100">
+                <div class="check-mark">✓</div>
+                <div class="check-text">Great Humor</div>
+              </div>
+              <div class="check-item" data-delay="200">
+                <div class="check-mark">✓</div>
+                <div class="check-text">Supportive</div>
+              </div>
+              <div class="check-item" data-delay="300">
+                <div class="check-mark">✓</div>
+                <div class="check-text">Creative</div>
+              </div>
+              <div class="check-item" data-delay="400">
+                <div class="check-mark">✓</div>
+                <div class="check-text">Music Lover</div>
+              </div>
+              <div class="check-item" data-delay="500">
+                <div class="check-mark">✓</div>
+                <div class="check-text">Officially Approved</div>
+              </div>
+            </div>
+
+            <!-- Barcode row -->
+            <div class="barcode-area">
+              <div>
+                <div class="barcode" id="barcodeEl"></div>
+                <div class="barcode-num" id="barcodeNum"></div>
+              </div>
+              <div class="qr-placeholder">
+                <div class="qr-grid" id="qrGrid"></div>
+              </div>
+            </div>
+
+            <!-- Sig + date -->
+            <div class="back-sig-row">
+              <div class="sig-block">
+                <div class="sig-label">Authorised Signature</div>
+                <div class="sig-line-container">
+                  <div class="sig-line"></div>
+                  <div class="sig-text">Big Sister ✦</div>
+                </div>
+              </div>
+              <div class="date-block">
+                <div class="date-label">Issue Date</div>
+                <div class="date-value" id="issueDate"></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Official stamp -->
+          <div class="stamp" id="stamp">
+            <div class="stamp-text">OFFICIAL<br>APPROVED<br>✦ 2026 ✦</div>
+          </div>
+        </div>
+        <!-- ／ BACK FACE -->
+
+      </div>
+    </div>
+    <!-- ／ card wrapper -->
+
+    <!-- Activate Button + Confirmation Panel share the same slot -->
+    <div class="btn-wrap">
+      <button class="activate-btn" id="activateBtn" aria-label="Activate your Sisterhood card">
+        Activate Card
+      </button>
+
+      <!-- ── CONFIRMATION PANEL (hidden until flip completes) ── -->
+      <div class="confirmation-panel" id="confirmPanel" aria-live="polite" aria-atomic="true">
+
+        <!-- Gold divider -->
+        <div class="confirm-divider"></div>
+
+        <!-- Green check circle with animated SVG tick -->
+        <div class="confirm-check-icon" id="confirmCheckIcon">
+          <svg class="confirm-check-svg" viewBox="0 0 18 18">
+            <polyline points="3,9 7,14 15,4" />
+          </svg>
+        </div>
+
+        <!-- Main emotional message -->
+        <div class="confirm-message">
+          Now you are my<br>Big Sister <span class="confirm-heart">❤️</span>
+        </div>
+
+        <!-- Sub-label -->
+        <div class="confirm-sub">Member · Sisterhood</div>
+
+        <!-- Decorative stars -->
+        <div class="confirm-stars">✦ &nbsp; ✦ &nbsp; ✦</div>
+
+      </div>
+    </div>
+
+  </div>
+  <!-- ／ app-container -->
+
+</div>
+<!-- ／ scene -->
+
+<!-- Confetti layer -->
+<div class="confetti-container" id="confettiContainer"></div>
+
+<!-- ═══════════════════════════════════════════
+     JAVASCRIPT
+═══════════════════════════════════════════ -->
+<script>
+  /* ── Utility ── */
+  const $ = id => document.getElementById(id);
+  const rand = (min, max) => Math.random() * (max - min) + min;
+
+  /* ── Particles ── */
+  (function spawnParticles() {
+    const container = $('particles');
+    const count = 30;
+    for (let i = 0; i < count; i++) {
+      const p = document.createElement('div');
+      p.className = 'particle';
+      p.style.cssText = `
+        left: ${rand(0,100)}%;
+        width: ${rand(1,3)}px;
+        height: ${rand(1,3)}px;
+        animation-duration: ${rand(8,18)}s;
+        animation-delay: ${rand(0,10)}s;
+        opacity: ${rand(0.2,0.7)};
+      `;
+      container.appendChild(p);
+    }
+  })();
+
+  /* ── Build barcode ── */
+  (function buildBarcode() {
+    const el = $('barcodeEl');
+    const widths = [1,1,2,1,3,1,1,2,1,2,3,1,2,1,1,3,1,2,1,1,2,1,3,1,1,2,1,2,1,3,1,1,2,1,1,2];
+    const gaps   = [1,2,1,3,1,1,2,1,2,1,1,3,1,1,2,1,3,1,1,2,1,2,1,1,3,1,1,2,1,1,3,2,1,1,2,1];
+
+    const container = document.createElement('div');
+    container.className = 'barcode-lines';
+    widths.forEach((w, i) => {
+      const line = document.createElement('div');
+      line.className = 'b-line';
+      line.style.width = `${w * 2}px`;
+      if (i < gaps.length) {
+        const gap = document.createElement('div');
+        gap.style.cssText = `width: ${gaps[i]}px; flex-shrink: 0;`;
+        container.appendChild(line);
+        container.appendChild(gap);
+      } else {
+        container.appendChild(line);
+      }
+    });
+    el.appendChild(container);
+
+    // barcode number
+    const digits = Array.from({length:16}, () => Math.floor(rand(0,10))).join(' ');
+    $('barcodeNum').textContent = digits;
+  })();
+
+  /* ── Build QR placeholder ── */
+  (function buildQR() {
+    const grid = $('qrGrid');
+    const pattern = [
+      1,1,1,0,1,
+      1,0,1,0,1,
+      1,1,1,0,0,
+      0,0,0,1,1,
+      1,1,0,1,0
+    ];
+    pattern.forEach((on, i) => {
+      const cell = document.createElement('div');
+      cell.className = 'qr-cell';
+      if (on) cell.style.opacity = rand(0.7, 1.0);
+      grid.appendChild(cell);
+    });
+  })();
+
+  /* ── Set issue date ── */
+  (function setDate() {
+    const d = new Date();
+    const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    $('issueDate').textContent = `${d.getDate()} ${months[d.getMonth()]} ${d.getFullYear()}`;
+  })();
+
+  /* ── Parallax tilt on card ── */
+  const cardWrapper = $('cardWrapper');
+  let tiltActive = true;
+
+  function applyTilt(x, y) {
+    if (!tiltActive) return;
+    const rect = cardWrapper.getBoundingClientRect();
+    const cx = rect.left + rect.width / 2;
+    const cy = rect.top + rect.height / 2;
+    const dx = (x - cx) / rect.width;
+    const dy = (y - cy) / rect.height;
+    const rotX = dy * -12;
+    const rotY = dx * 14;
+    cardWrapper.style.transform = `rotateX(${rotX}deg) rotateY(${rotY}deg)`;
+  }
+
+  document.addEventListener('mousemove', e => applyTilt(e.clientX, e.clientY));
+  document.addEventListener('touchmove', e => {
+    const t = e.touches[0];
+    applyTilt(t.clientX, t.clientY);
+  }, { passive: true });
+  document.addEventListener('mouseleave', () => {
+    cardWrapper.style.transition = 'transform 0.5s ease';
+    cardWrapper.style.transform = '';
+    setTimeout(() => cardWrapper.style.transition = 'transform 0.1s linear', 500);
+  });
+
+  /* ── Ripple effect on button ── */
+  function createRipple(e, btn) {
+    const rect = btn.getBoundingClientRect();
+    const x = (e.clientX || (e.touches && e.touches[0].clientX) || rect.left + rect.width/2) - rect.left;
+    const y = (e.clientY || (e.touches && e.touches[0].clientY) || rect.top + rect.height/2) - rect.top;
+    const r = document.createElement('span');
+    r.className = 'ripple';
+    r.style.cssText = `width: 60px; height: 60px; left: ${x-30}px; top: ${y-30}px;`;
+    btn.appendChild(r);
+    setTimeout(() => r.remove(), 700);
+  }
+
+  /* ── Sparkle burst on card ── */
+  function spawnSparkles() {
+    const positions = [
+      { top: '10%', left: '80%' },
+      { top: '70%', left: '15%' },
+      { top: '40%', left: '90%' },
+      { top: '85%', left: '50%' },
+    ];
+    positions.forEach((pos, i) => {
+      setTimeout(() => {
+        const s = document.createElement('div');
+        s.className = 'sparkle';
+        s.style.cssText = `position:absolute; top:${pos.top}; left:${pos.left}; z-index:30;`;
+        cardWrapper.appendChild(s);
+        setTimeout(() => s.remove(), 1400);
+      }, i * 150);
+    });
+  }
+
+  /* ── Animate back-face checklist ── */
+  function animateChecklist() {
+    const items = document.querySelectorAll('.check-item');
+    items.forEach(item => {
+      const delay = parseInt(item.dataset.delay) + 600;
+      setTimeout(() => item.classList.add('visible'), delay);
+    });
+    // stamp
+    setTimeout(() => {
+      $('stamp').classList.add('visible');
+    }, 1400);
+  }
+
+  /* ── Confetti burst (two-wave version) ── */
+  function launchConfetti(intense) {
+    const colors = ['#C9A84C','#E8C86A','#00D4A0','#FF7A35','#F0F0FF','#A078FF','#FFB8E8'];
+    const shapes = ['circle','square','ribbon'];
+    const container = $('confettiContainer');
+    const count = intense ? 90 : 55;
+
+    for (let i = 0; i < count; i++) {
+      setTimeout(() => {
+        const p = document.createElement('div');
+        const shape = shapes[Math.floor(rand(0, shapes.length))];
+        const size  = rand(5, 11);
+        p.className = 'confetti-piece';
+        p.style.cssText = `
+          left: ${rand(5, 95)}%;
+          top: -12px;
+          width: ${shape === 'ribbon' ? size * 0.4 : size}px;
+          height: ${shape === 'ribbon' ? size * 2.5 : size}px;
+          background: ${colors[Math.floor(rand(0, colors.length))]};
+          animation-duration: ${rand(1.6, 2.8)}s;
+          animation-delay: ${rand(0, intense ? 0.8 : 0.5)}s;
+          border-radius: ${shape === 'circle' ? '50%' : shape === 'square' ? '1px' : '2px'};
+          transform: rotateZ(${rand(0,360)}deg);
+          opacity: ${rand(0.75, 1)};
+        `;
+        container.appendChild(p);
+        setTimeout(() => p.remove(), 3800);
+      }, i * (intense ? 18 : 28));
+    }
+  }
+
+  /* ── Reveal confirmation panel with choreographed timing ── */
+  function revealConfirmation() {
+    const panel = $('confirmPanel');
+
+    // Panel entrance — spring bounce upward
+    panel.classList.add('reveal');
+  }
+
+  /* ── FLIP LOGIC ── */
+  let flipped = false;
+  const btn     = $('activateBtn');
+  const flipper = $('cardFlipper');
+
+  function doFlip(e) {
+    if (flipped) return;
+    flipped = true;
+
+    createRipple(e, btn);
+
+    // ① Freeze tilt & snap card to centre
+    tiltActive = false;
+    cardWrapper.style.transition = 'transform 0.45s cubic-bezier(0.25,0.46,0.45,0.94)';
+    cardWrapper.style.transform  = '';
+
+    setTimeout(() => {
+
+      // ② Button vanishes instantly (opacity 0 in 0 ms via class that already has transition)
+      btn.classList.add('hidden');
+
+      // ③ Card flip begins
+      flipper.classList.add('flipped');
+
+      // ④ Back-face checklist stagger starts mid-flip
+      animateChecklist();
+
+      // ⑤ Card lands — spring bounce
+      setTimeout(() => {
+        cardWrapper.style.transition = 'transform 0.4s cubic-bezier(0.34,1.56,0.64,1)';
+        cardWrapper.style.transform  = 'scale(1.045)';
+
+        setTimeout(() => {
+          cardWrapper.style.transform = 'scale(1)';
+
+          // ⑥ Re-enable parallax tilt after bounce settles
+          setTimeout(() => {
+            tiltActive = true;
+            cardWrapper.style.transition = 'transform 0.1s linear';
+          }, 400);
+
+        }, 220);
+      }, 1060);
+
+      // ⑦ First confetti wave fires as card lands
+      setTimeout(() => {
+        launchConfetti(false);
+        spawnSparkles();
+      }, 1080);
+
+      // ⑧ Confirmation panel rises from below — emotional beat
+      setTimeout(() => {
+        revealConfirmation();
+      }, 1350);
+
+      // ⑨ Second confetti wave — bigger, warmer, feels like a celebration peak
+      setTimeout(() => {
+        launchConfetti(true);
+      }, 1600);
+
+      // ⑩ Extra sparkles burst around card
+      setTimeout(() => {
+        spawnSparkles();
+      }, 1800);
+
+    }, 80);
+  }
+
+  btn.addEventListener('click',      doFlip);
+  btn.addEventListener('touchstart', doFlip, { passive: true });
+
+  /* ── Periodic shimmer sparkles on front face only ── */
+  setInterval(() => {
+    if (flipped) return;
+    const s = document.createElement('div');
+    s.style.cssText = `
+      position: absolute;
+      top: ${rand(10,80)}%;
+      left: ${rand(5,90)}%;
+      font-size: ${rand(6,10)}px;
+      color: #E8C86A;
+      opacity: 0;
+      z-index: 25;
+      pointer-events: none;
+      animation: twinkle 1s ease-out forwards;
+    `;
+    s.textContent = '✦';
+    cardWrapper.querySelector('.card-front').appendChild(s);
+    setTimeout(() => s.remove(), 1200);
+  }, 2200);
+</script>
+
+</body>
+</html>
